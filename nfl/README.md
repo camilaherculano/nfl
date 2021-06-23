@@ -54,6 +54,8 @@ We will evaluate you on your ability to solve the problem defined in the require
 If you have any questions regarding requirements, do not hesitate to email your contact at theScore for clarification.
 
 ### Installation and running this solution
+
+Expected node version ">= 10.14.2"
 ## Available Scripts
 
 In the project directory, you can run:
