@@ -1,14 +1,43 @@
 import React, { useMemo } from 'react'
 import { useTable, useSortBy, useFilters } from 'react-table'
+import { useExportData } from 'react-table-plugins'
+import Papa from 'papaparse'
 import { COLUMNS } from './columns'
 import MOCK_DATA from './rushing.json'
 import './table.css'
-import {CSVLink} from 'react-csv';
 
 export const Table = () => {
 
     const columns = useMemo(() => COLUMNS, [])
     const data = useMemo(() => MOCK_DATA, [])
+
+    function DefaultColumnFilter({
+        column: { filterValue, preFilteredRows, setFilter },
+      }) {
+        const count = preFilteredRows.length
+      
+        return (
+          <input
+            value={filterValue || ''}
+            onChange={e => {
+              setFilter(e.target.value || undefined)
+            }}
+            placeholder={`Search ${count} records...`}
+          />
+        )
+      }
+      
+    const defaultColumn = {
+        Filter: DefaultColumnFilter,
+    }
+
+    function getExportFileBlob({ columns, data, fileType, fileName }) {
+        if (fileType === 'csv') {
+          const headerNames = columns.map(col => col.exportValue)
+          const csvString = Papa.unparse({ fields: headerNames, data })
+          return new Blob([csvString], { type: 'text/csv' })
+        } 
+    }
 
     const {
         getTableProps,
@@ -16,18 +45,24 @@ export const Table = () => {
         headerGroups,
         rows,
         prepareRow,
+        exportData,
     } = useTable({
         columns: columns,
-        data: data
+        data: data,
+        defaultColumn,
+        getExportFileBlob,
     },
     useFilters,
-    useSortBy)
+    useSortBy,
+    useExportData)
 
     return (
         <div>
-            <CSVLink data={data} filename={"nfl.csv"}>
-                Download
-            </CSVLink>
+            <button
+                onClick={() => {exportData('csv', false)}}
+            >
+                Export as CSV
+            </button>
             <table {...getTableProps()}>
                 <thead>
                     {headerGroups.map((headerGroup) => (
